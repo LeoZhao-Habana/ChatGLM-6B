@@ -2,10 +2,15 @@ import os
 import platform
 import signal
 from transformers import AutoTokenizer, AutoModel
+import habana_frameworks.torch.core as htcore
+import torch
 
-tokenizer = AutoTokenizer.from_pretrained("THUDM/chatglm-6b", trust_remote_code=True)
-model = AutoModel.from_pretrained("THUDM/chatglm-6b", trust_remote_code=True).half().cuda()
+tokenizer = AutoTokenizer.from_pretrained("../chatglm-6b", trust_remote_code=True)
+model = AutoModel.from_pretrained("../chatglm-6b", trust_remote_code=True).to("hpu", dtype=torch.bfloat16)
 model = model.eval()
+
+import habana_frameworks.torch.hpu.graphs as htgraphs
+model = htgraphs.wrap_in_hpu_graph(model)
 
 os_name = platform.system()
 clear_command = 'cls' if os_name == 'Windows' else 'clear'
